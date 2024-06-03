@@ -147,28 +147,58 @@ export const createProductController = async (req, res) => {
 };
 
 //get all products
+
 export const getProductController = async (req, res) => {
   try {
     const pageNumber = parseInt(req.query.pageNumber) || 1;
     const limit = parseInt(req.query.limit) || 40;
     const startIndex = (pageNumber - 1) * limit;
-    console.log("Page number: " + pageNumber, "\n\nLimit: " + limit);
-    const products = await productModel
-      .find({})
-      .populate("category")
-      .populate("subject")
-      .select("-photo")
-      .select("-frontphoto")
-      .select("-backphoto")
-      .skip(startIndex)
-      .limit(limit)
-      .sort({ createdAt: -1 });
+
+    console.log(
+      "Page number: " + pageNumber,
+      "\n\nLimit: " + limit,
+      "\n\n",
+      startIndex
+    );
+
+    const pipeline = [
+      { $match: {} },
+      {
+        $lookup: {
+          from: "categories", // The name of the category collection
+          localField: "category",
+          foreignField: "_id",
+          as: "category",
+        },
+      },
+      {
+        $lookup: {
+          from: "subjects", // The name of the subject collection
+          localField: "subject",
+          foreignField: "_id",
+          as: "subject",
+        },
+      },
+      {
+        $project: {
+          photo: 0,
+          frontphoto: 0,
+          backphoto: 0,
+        },
+      },
+      { $sort: { createdAt: -1 } },
+      { $skip: startIndex },
+      { $limit: limit },
+    ];
+
+    const products = await productModel.aggregate(pipeline).allowDiskUse(true);
     const totalProducts = await productModel.countDocuments();
+
     console.log("Length of product: ", products.length);
+
     return res.status(200).json({
       success: true,
       currentPage: pageNumber,
-      // totalPages: Math.ceil(totalProducts / limit),
       countTotal: totalProducts,
       message: "All products",
       products,
@@ -912,7 +942,7 @@ export const uploadFile = async (req, res) => {
                 existingProduct.author = author;
                 existingProduct.pages = parseInt(pages) || 0;
                 existingProduct.price = parsedPrice;
-                existingProduct.isbn = parsedIsbn;
+                existingProduct.isbn = parsedIsbn ?? "";
                 existingProduct.slug = slug;
                 existingProduct.subject = subject._id;
                 existingProduct.category = category._id;
@@ -930,7 +960,7 @@ export const uploadFile = async (req, res) => {
                   author,
                   pages: parseInt(pages) || 0,
                   price: parsedPrice,
-                  isbn: parsedIsbn,
+                  isbn: parsedIsbn ?? "",
                   slug,
                   uid,
                   subject: subject._id,
