@@ -194,8 +194,6 @@ export const getProductController = async (req, res) => {
     const products = await productModel.aggregate(pipeline).allowDiskUse(true);
     const totalProducts = await productModel.countDocuments();
 
-    console.log("Length of product: ", products.length);
-
     return res.status(200).json({
       success: true,
       currentPage: pageNumber,
@@ -468,30 +466,79 @@ export const updateProductController = async (req, res) => {
 //   }
 // };
 
+// export const productFiltersController = async (req, res) => {
+//   try {
+//     const { category, subject, radio } = req.body;
+//     console.log("Received:", category, subject, radio);
+
+//     let args = {};
+
+//     if (category) {
+//       args.category = category;
+//     }
+
+//     if (subject) {
+//       args.subject = subject;
+//     }
+
+//     if (radio && radio.length === 2) {
+//       args.price = { $gte: radio[0], $lte: radio[1] };
+//     }
+
+//     console.log("Filtering with args:", args);
+//     const products = await productModel.find(args);
+//     // console.log("Filtered products:", products);
+//     return res.status(200).send({
+//       success: true,
+//       products,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(400).send({
+//       success: false,
+//       message: "Error while filtering products",
+//       error,
+//     });
+//   }
+// };
+
+productModel.createIndexes({ category: 1, subject: 1, price: 1 });
+
 export const productFiltersController = async (req, res) => {
   try {
     const { category, subject, radio } = req.body;
-    console.log("Received:", category, subject, radio);
 
-    let args = {};
+    // Build the query object dynamically
+    const query = {};
 
     if (category) {
-      args.category = category;
+      query.category = category;
     }
 
     if (subject) {
-      args.subject = subject;
+      query.subject = subject;
     }
 
     if (radio && radio.length === 2) {
-      args.price = { $gte: radio[0], $lte: radio[1] };
+      query.price = { $gte: radio[0], $lte: radio[1] };
     }
 
-    console.log("Filtering with args:", args);
-    const products = await productModel.find(args);
-    // console.log("Filtered products:", products);
+    console.log("Filtering with query:", query);
+
+    // Use lean() for faster read-only queries
+    const products = await productModel
+      .find(query)
+      .select("-photo -frontphoto -backphoto")
+      .lean();
+
+    const totalProducts = products.length;
+
+    // Log count instead of full product details for large datasets
+    console.log(`Filtered products count: ${products.length}`);
+
     return res.status(200).send({
       success: true,
+      countTotal: totalProducts,
       products,
     });
   } catch (error) {
@@ -737,109 +784,6 @@ export const removeCartItem = async (req, res) => {
   }
 };
 
-//Upload excel file
-// export const uploadFile = async (req, res) => {
-//   try {
-//     if (!req.file) {
-//       return res.status(400).send("No file uploaded.");
-//     }
-
-//     const filePath = req.file.path;
-
-//     fs.readFile(filePath, function (err, fileData) {
-//       if (err) {
-//         console.error(err);
-//         return res.status(500).send("Error reading file.");
-//       }
-
-//       parse(
-//         fileData,
-//         { columns: false, trim: true },
-//         async function (err, rows) {
-//           if (err) {
-//             console.error(err);
-//             return res.status(500).send("Error parsing CSV file.");
-//           }
-
-//           const headers = rows[0].map((header) => header.trim());
-//           const results = [];
-
-//           for (let i = 1; i < rows.length; i++) {
-//             const row = rows[i];
-//             const product = {};
-//             console.log("Row:", row);
-//             for (let j = 0; j < headers.length; j++) {
-//               if (headers[j] !== "category" && headers[j] !== "slug") {
-//                 if (headers[j] === "price") {
-//                   const priceString = row[j].trim().replace(/\t/g, "");
-//                   product[headers[j]] = parseFloat(priceString) || 0;
-//                 } else if (headers[j] === "isbn") {
-//                   const isbnString = row[j].trim().replace(/\t/g, "");
-//                   product[headers[j]] = isbnString;
-//                 } else {
-//                   product[headers[j]] = row[j];
-//                 }
-//               }
-//             }
-//             console.log("Product:", product);
-
-//             try {
-//               const {
-//                 name,
-//                 description,
-//                 author,
-//                 pages,
-//                 price,
-//                 isbn,
-//                 quantity,
-//               } = product;
-
-//               const parsedPrice = parseFloat(price) || 0;
-//               const parsedIsbn = isbn;
-
-//               console.log("Price before parsing:", price);
-//               const slug = slugify(name, { lower: true, strict: true });
-
-//               const defaultPhotoPath = path.join(
-//                 process.cwd(),
-//                 "images",
-//                 "image-512.jpg"
-//               );
-
-//               const newProduct = new productModel({
-//                 name,
-//                 description,
-//                 author,
-//                 pages: parseInt(pages) || 0,
-//                 price: parsedPrice,
-//                 isbn: parsedIsbn,
-//                 quantity: parseInt(quantity) || 0,
-//                 slug,
-//                 photo: {
-//                   data: fs.readFileSync(defaultPhotoPath),
-//                   contentType: "image/jpeg",
-//                 },
-//               });
-
-//               await newProduct.save();
-//               results.push(newProduct);
-//               console.log("product data:", newProduct);
-//             } catch (error) {
-//               console.error("Error saving product:", error);
-//             }
-//           }
-
-//           fs.unlinkSync(filePath);
-
-//           res.status(200).send("Data uploaded successfully.");
-//         }
-//       );
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send("Server Error");
-//   }
-// };
 export const uploadFile = async (req, res) => {
   try {
     if (!req.file) {
@@ -993,12 +937,17 @@ export const uploadFile = async (req, res) => {
 export const searchSuggestionsFilterController = async (req, res) => {
   try {
     const { keyword } = req.params; // Access the search keyword from the request parameters
+    const query = decodeURIComponent(keyword); // Decode the query
+    console.log(query);
 
-    // Perform a database query to find relevant suggestions based on the keyword
-    // Example: Find products whose names match the keyword
     const suggestions = await productModel
-      .find({ name: { $regex: keyword, $options: "i" } })
-      .limit(5); // Limit the number of suggestions to 5
+      .find({
+        $or: [
+          { name: { $regex: query, $options: "i" } },
+          { description: { $regex: query, $options: "i" } },
+        ],
+      })
+      .select("-photo -backphoto -frontphoto");
 
     res.json(suggestions);
   } catch (error) {
