@@ -76,7 +76,7 @@ router.get("/product-list/:page", productListController);
 router.get("/search/:keyword", searchProductController);
 
 // suggestions search
-router.get("/search/:keyword", searchSuggestionsFilterController);
+router.get("/search-suggestion/:keyword", searchSuggestionsFilterController);
 
 // similar products
 router.get("/related-product/:pid/:cid", relatedProductController);
