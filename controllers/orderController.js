@@ -1,6 +1,12 @@
+import { sendEmail } from "../helpers/sendMail.js";
 import orderModal from "../models/orderModel.js";
 import dotenv from "dotenv";
+import userModel from "../models/userModel.js";
+import ejs from "ejs";
+import path from "path";
 dotenv.config();
+
+const __dirname = path.resolve();
 
 //get all orders
 export const getOrdersController = async (req, res) => {
@@ -53,6 +59,30 @@ export const createOrder = async (req, res) => {
   try {
     const newOrder = await orderModal.create(req.body);
     console.log(newOrder);
+
+    if (!newOrder) {
+      return res.status(404).json({
+        success: false,
+        message: "Error to create order",
+      });
+    }
+    const user = await userModel.findById(newOrder.buyer);
+    const data = {
+      name: user.name,
+      orderId: newOrder._id,
+      products: newOrder.products_name,
+      trackingLink: "https://bharathmegaminds.com/#/dashboard/user/orders",
+    };
+    const html = await ejs.renderFile(
+      path.join(__dirname, "/emails/order.ejs"),
+      data
+    );
+
+    await sendEmail({
+      to: user.email,
+      subject: "Order Placed Successfully",
+      html,
+    });
     res.status(201).json(newOrder);
   } catch (error) {
     console.error(error);
@@ -93,10 +123,35 @@ export const updateOrder = async (req, res) => {
       req.body,
       { new: true }
     );
+
     console.log(updateOrder);
     if (!updatedOrder) {
       return res.status(404).json({ message: "Order not found" });
     }
+
+    const user = await userModel.findById(updatedOrder.buyer);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const data = {
+      name: user.name,
+      status: updatedOrder.status,
+      orderId: updatedOrder._id,
+      products: updatedOrder.products_name,
+      trackingLink: "https://bharathmegaminds.com/#/dashboard/user/orders",
+    };
+    const html = await ejs.renderFile(
+      path.join(__dirname, "/emails/order_status.ejs"),
+      data
+    );
+
+    await sendEmail({
+      to: user.email,
+      subject: "Order " + updatedOrder.status,
+      html,
+    });
+
     res.json(updatedOrder);
   } catch (error) {
     console.error(error);
