@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Status Update</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f6f6f6;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        background-color: #e0731d;
+        color: white;
+        padding: 10px 0;
+        border-radius: 8px 8px 0 0;
+      }
+      .content {
+        margin: 20px 0;
+      }
+      .order-details {
+        background-color: #f9f9f9;
+        padding: 10px;
+        border-radius: 4px;
+      }
+      .order-details h3 {
+        margin: 0;
+        font-size: 1.7;
+        color: #333;
+      }
+      .order-details p {
+        margin: 5px 0;
+        font-size: 1.3rem;
+        color: #666;
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #999;
+        margin-top: 20px;
+      }
+      .button {
+        display: inline-block;
+        padding: 10px 20px;
+        margin: 20px 0;
+        background-color: #e0731d;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+      }
+      p span {
+        color: #e0731d;
+        font-weight: bold;
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Order Status Update</h1>
+      </div>
+      <div class="content">
+        <p>Hello <%= name %>,</p>
+        <p>
+          We are pleased to inform you that your order has been
+          <span><%= status %>!</span>
+        </p>
+        <div class="order-details">
+          <h3>Order Details</h3>
+          <p><strong>Order ID:</strong> <%= orderId %></p>
+          <p><strong>Products:</strong></p>
+          <ul>
+            <% products.forEach(function(product) { %>
+            <li><%= product %></li>
+            <% }); %>
+          </ul>
+        </div>
+        <a href="<%= trackingLink %>" class="button">Track Your Order</a>
+      </div>
+      <div class="footer">
+        <p>Thank you for shopping with us!</p>
+        <p>
+          &copy; <%= new Date().getFullYear() %> Your Company Name. All rights
+          reserved.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
