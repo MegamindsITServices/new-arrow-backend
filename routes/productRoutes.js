@@ -23,10 +23,14 @@ import {
   removeCartItem,
   uploadFile,
   searchSuggestionsFilterController,
+  getNewProductUid,
 } from "../controllers/productController.js";
 const router = express.Router();
 const upload = multer({ dest: "uploads/" });
 router.post("/upload", upload.single("file"), uploadFile);
+
+// Get the new Product UID
+router.get("/new-uid", requireSignIn, isAdmin, getNewProductUid);
 
 router.post(
   "/create-product",
@@ -38,7 +42,6 @@ router.post(
 
 //get products
 router.get("/get-product", getProductController);
-export default router;
 
 //single product
 router.get("/get-product/:uid", getSingleProductController);
@@ -93,3 +96,5 @@ router.post("/cart/add-item", addCartItem);
 
 //remove item in user cart
 router.post("/cart/remove-item", removeCartItem);
+
+export default router;
