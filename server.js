@@ -14,6 +14,7 @@ import blogRoutes from "./routes/blogRoutes.js";
 import bannerRoute from "./routes/bannerRoute.js";
 import HomeBookRoute from "./routes/homeBookRoute.js";
 import dealerStateRoute from "./routes/dealerStateRoute.js";
+import newReleaseRoutes from "./routes/newReleaseRoutes.js";
 import path from "path";
 //Configure env
 dotenv.config();
@@ -89,6 +90,8 @@ app.use("/api/v1/review", reviewRoutes);
 app.use("/api/v1/posts", blogRoutes);
 app.use("/api/v1/banner", bannerRoute);
 app.use("/api/v1/bookphoto", HomeBookRoute);
+app.use("/api/v1/new-release", newReleaseRoutes);
+
 app.use("/api/v1/dealerstate", dealerStateRoute);
 
 //rest api
@@ -98,9 +101,9 @@ app.get("/s", (req, res) => {
 });
 
 const PORT = process.env.PORT || 8080;
-app.use(express.static(path.join(__dirname, "../arrow-frontend/build")));
+app.use(express.static(path.join(__dirname, "../build")));
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../arrow-frontend/build/index.html"));
+  res.sendFile(path.join(__dirname, "../build/index.html"));
 });
 
 connectDB().then(() => {
