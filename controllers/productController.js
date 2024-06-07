@@ -41,6 +41,23 @@ const generateNewUid = async () => {
   return newUid;
 };
 
+export const getNewProductUid = async (req, res) => {
+  try {
+    const uid = await generateNewUid();
+    if (!uid)
+      return res
+        .status(403)
+        .json({ success: false, message: "Failed to generate new UID" });
+
+    return res.status(200).json({ success: true, uid });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to generate new UID" });
+  }
+};
+
 export const createProductController = async (req, res) => {
   try {
     const {
