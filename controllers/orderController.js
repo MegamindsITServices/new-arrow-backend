@@ -206,7 +206,7 @@ export const cancelOrderController = async (req, res) => {
 // get cancel order details
 export const getCancelOrdersController = async (req, res) => {
   try {
-    const getAllCancelOrders = await orderModal.find({ status: "cancelled" });
+    const getAllCancelOrders = await orderModal.find({ status: "Cancelled" });
     res.status(200).json({ success: true, orders: getAllCancelOrders });
   } catch (error) {
     console.error("Error fetching canceled orders:", error);
