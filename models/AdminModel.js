@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const ownerSchema = new mongoose.Schema(
+const adminSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -56,11 +56,11 @@ const ownerSchema = new mongoose.Schema(
     },
     role: {
       type: Number,
-      default: 2,
+      default: 1,
     },
     cart: [{}],
   },
   { timestamps: true }
 );
 
-export default mongoose.model("owner", ownerSchema);
+export default mongoose.model("admin", adminSchema);
