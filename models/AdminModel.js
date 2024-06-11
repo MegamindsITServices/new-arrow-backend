@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const adminSchema = new mongoose.Schema(
+const ownerSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -21,8 +21,34 @@ const adminSchema = new mongoose.Schema(
       required: true,
     },
     address: {
-      type: {},
-      required: true,
+      shippingAddress: {
+        type: String,
+        required: true,
+      },
+      state: {
+        type: String,
+        required: true,
+      },
+      district: {
+        type: String,
+        required: true,
+      },
+      city: {
+        type: String,
+        required: true,
+      },
+      locality: {
+        type: String,
+        required: true,
+      },
+      landmark: {
+        type: String,
+        required: true,
+      },
+      pincode: {
+        type: String,
+        required: true,
+      },
     },
     answer: {
       type: String,
@@ -30,11 +56,11 @@ const adminSchema = new mongoose.Schema(
     },
     role: {
       type: Number,
-      default: 1,
+      default: 2,
     },
     cart: [{}],
   },
   { timestamps: true }
 );
 
-export default mongoose.model("admin", adminSchema);
+export default mongoose.model("owner", ownerSchema);
