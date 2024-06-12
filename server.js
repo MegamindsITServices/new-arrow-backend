@@ -15,6 +15,8 @@ import bannerRoute from "./routes/bannerRoute.js";
 import HomeBookRoute from "./routes/homeBookRoute.js";
 import dealerStateRoute from "./routes/dealerStateRoute.js";
 import newReleaseRoutes from "./routes/newReleaseRoutes.js";
+import mongoose from "mongoose";
+
 import path from "path";
 //Configure env
 dotenv.config();
@@ -95,6 +97,38 @@ app.use("/api/v1/new-release", newReleaseRoutes);
 app.use("/api/v1/dealerstate", dealerStateRoute);
 
 //rest api
+
+const visitorSchema = new mongoose.Schema({
+  counter: {
+    type: Number,
+    default: 0,
+  },
+});
+
+// Creating Visitor Table in visitCounterDB
+const Visitor = mongoose.model("Visitor", visitorSchema);
+
+const siteViewsUp = async () => {
+  const visitor = await Visitor.findOne();
+  if (visitor) {
+    visitor.counter++;
+    await visitor.save();
+  } else {
+    const newVisitor = new Visitor({
+      counter: 1,
+    });
+    await newVisitor.save();
+  }
+};
+
+app.get("/api/visitors", async (req, res) => {
+  await siteViewsUp();
+  const visitor = await Visitor.findById("6669146a0c3687ba21e5bb75");
+  res.json({
+    visitors: visitor.counter,
+  });
+});
+
 
 app.get("/s", (req, res) => {
   res.send("Welcome to Arrow Publication pvt. ltd.");
