@@ -121,8 +121,13 @@ const siteViewsUp = async () => {
   }
 };
 
-app.get("/api/visitors", async (req, res) => {
+
+app.get("/api/visitor-count", async (req, res) => {
   await siteViewsUp();
+  return res.json({ success: true });
+});
+
+app.get("/api/visitors", async (req, res) => {
   const visitor = await Visitor.findById("6669146a0c3687ba21e5bb75");
   res.json({
     visitors: visitor.counter,
