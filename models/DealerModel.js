@@ -9,6 +9,10 @@ const DealerSchema = new mongoose.Schema(
     email: {
       type: String,
     },
+    designation: {
+      type: String,
+      required: true,
+    },
     slug: {
       type: String,
     },
@@ -18,7 +22,11 @@ const DealerSchema = new mongoose.Schema(
       required: false,
     },
     address: {
-      type: {},
+      type: String,
+      required: true,
+    },
+    area: {
+      type: String,
       required: true,
     },
     phone: {
