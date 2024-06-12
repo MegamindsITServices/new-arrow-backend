@@ -7,16 +7,36 @@ import {
   updateDealerController,
   getSelectedStateDealerController,
   getPhotoStateController,
+  getSingleDealerController,
+  getDealerPhotoController,
 } from "../controllers/dealerController.js";
+import { isAdmin, requireSignIn } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
 router.post("/create-dealer", formidable(), createDealerController);
 
-router.get("/get-all-dealer", getAllDealerController);
+router.get(
+  "/get-all-dealer",
 
-router.delete("/delete-dealer/:id", deleteDealerController);
+  getAllDealerController
+);
+router.get("/get-dealer/:id", getSingleDealerController);
+router.get("/dealer-photo/:id", getDealerPhotoController);
 
-router.put("/update-dealer/:id", updateDealerController);
+router.delete(
+  "/delete-dealer/:id",
+  requireSignIn,
+  isAdmin,
+  deleteDealerController
+);
+
+router.put(
+  "/update-dealer/:id",
+  requireSignIn,
+  isAdmin,
+  formidable(),
+  updateDealerController
+);
 
 router.get("/selected-state/:state", getSelectedStateDealerController);
 router.get("/get-photo/:state", getPhotoStateController);
