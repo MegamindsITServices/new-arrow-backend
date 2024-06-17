@@ -158,7 +158,9 @@ export const getSelectedStateDealerController = async (req, res) => {
 
     console.log("State Parameter:", state);
     const stateObjectId = mongoose.Types.ObjectId(state);
-    const dealers = await DealerModel.find({ state: stateObjectId });
+    const dealers = await DealerModel.find({ state: stateObjectId }).populate(
+      "state"
+    );
     console.log("Fetched Dealers:", dealers);
     res.status(200).json(dealers);
   } catch (error) {
